@@ -26,6 +26,7 @@ public:
     void insert(T value,int index);
     void remove(int index);
     void search(T value);
+    void update(T value,int index);
     int size();
     void displayLinkedList();
 private:
@@ -49,6 +50,7 @@ int main()
     linkedListInt.remove(2);
     linkedListInt.remove(0);
     linkedListInt.remove(1000);
+    linkedListInt.update(123, 1);
     linkedListInt.displayLinkedList();
     linkedListInt.search(1);
     linkedListInt.search(10000);
@@ -68,6 +70,7 @@ int main()
     linkedListFloat.remove(2);
     linkedListFloat.remove(0);
     linkedListFloat.remove(1000);
+    linkedListFloat.update(123.88, 1);
     linkedListFloat.displayLinkedList();
     linkedListFloat.search(1.88);
     linkedListFloat.search(10000.88);
@@ -87,6 +90,7 @@ int main()
     linkedListChar.remove(2);
     linkedListChar.remove(0);
     linkedListChar.remove(1000);
+    linkedListChar.update('%', 1);
     linkedListChar.displayLinkedList();
     linkedListChar.search('A');
     linkedListChar.search('$');
@@ -166,6 +170,12 @@ void LinkedList<T>::search(T value) {
         start = start->next;
     }
     cout << "VALUE " << value << " NOT FOUND" << endl;
+}
+
+template<class T>
+void LinkedList<T>::update(T value, int index) {
+    struct Node<T>* node = traverse(index);
+    node->value = value;
 }
 
 template<class T>
