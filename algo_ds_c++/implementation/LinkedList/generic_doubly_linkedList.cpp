@@ -22,6 +22,9 @@ public:
     void append(T value);
     void prepend(T value);
     void insert(struct doublyNode<T>* node, T value);
+    void removeFirst();
+    void removeLast();
+    void remove(struct doublyNode<T>* node);
     void printForward();
     void printBackward();
     struct doublyNode<T>* traverse(int index);
@@ -39,6 +42,9 @@ int main()
     doublyLinkedListInteger.append(5);
     doublyLinkedListInteger.prepend(0);
     doublyLinkedListInteger.insert(doublyLinkedListInteger.traverse(2), 100);
+    doublyLinkedListInteger.removeFirst();
+    doublyLinkedListInteger.removeLast();
+    doublyLinkedListInteger.remove(doublyLinkedListInteger.traverse(1));
     doublyLinkedListInteger.printForward();
     doublyLinkedListInteger.printBackward();
     cout << "--------------------------------------------" << endl;
@@ -50,6 +56,9 @@ int main()
     doublyLinkedListChar.append('E');
     doublyLinkedListChar.prepend('Y');
     doublyLinkedListChar.insert(doublyLinkedListChar.traverse(2), '@');
+    doublyLinkedListChar.removeFirst();
+    doublyLinkedListChar.removeLast();
+    doublyLinkedListChar.remove(doublyLinkedListChar.traverse(1));
     doublyLinkedListChar.printForward();
     doublyLinkedListChar.printBackward();
     cout << "--------------------------------------------" << endl;
@@ -87,6 +96,29 @@ void DoublyLinkedList<T>::insert(struct doublyNode<T>* node, T value) {
         newNode->next = node;
         node->prev = newNode;
     }
+}
+
+template<class T>
+void DoublyLinkedList<T>::removeFirst() {
+    struct doublyNode<T>* oldHead = head;
+    (oldHead->next)->prev = NULL;
+    head = oldHead->next;
+    deallocateHeapNode(oldHead);
+}
+
+template<class T>
+void DoublyLinkedList<T>::removeLast() {
+    struct doublyNode<T>* oldTail = tail;
+    (oldTail->prev)->next = NULL;
+    tail = oldTail->prev;
+    deallocateHeapNode(oldTail);
+}
+
+template<class T>
+void DoublyLinkedList<T>::remove(struct doublyNode<T>* node) {
+    (node->prev)->next = node->next;
+    (node->next)->prev = node->prev;
+    deallocateHeapNode(node);
 }
 
 template<class T>
