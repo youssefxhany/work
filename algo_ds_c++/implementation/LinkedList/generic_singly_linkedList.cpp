@@ -8,14 +8,14 @@ using namespace std;
 template<class T>
 struct Node {
     T value;
-    struct Node<T> *next;
+    struct Node<T>* next;
 };
 
 template<class T>
 class LinkedList {
 private:
-    struct Node<T> *head, *tail;
-    int capacity=0;
+    struct Node<T>* head, * tail;
+    int capacity = 0;
 
 public:
     LinkedList(T value);
@@ -23,10 +23,11 @@ public:
     void prepend(T value);
     void removeLast();
     void removeFirst();
-    void insert(T value,int index);
+    void insert(T value, int index);
     void remove(int index);
     void search(T value);
-    void update(T value,int index);
+    void update(T value, int index);
+    void reverse();
     int size();
     void displayLinkedList();
 private:
@@ -44,7 +45,7 @@ int main()
     linkedListInt.prepend(-1);
     linkedListInt.removeLast();
     linkedListInt.removeFirst();
-    linkedListInt.insert(100,1);
+    linkedListInt.insert(100, 1);
     linkedListInt.insert(100, 0);
     linkedListInt.insert(100, 1000);
     linkedListInt.remove(2);
@@ -54,6 +55,8 @@ int main()
     linkedListInt.displayLinkedList();
     linkedListInt.search(1);
     linkedListInt.search(10000);
+    linkedListInt.reverse();
+    linkedListInt.displayLinkedList();
     cout << "size : " << linkedListInt.size() << endl;
     cout << "---------------------------------------------" << endl;
 
@@ -74,6 +77,8 @@ int main()
     linkedListFloat.displayLinkedList();
     linkedListFloat.search(1.88);
     linkedListFloat.search(10000.88);
+    linkedListFloat.reverse();
+    linkedListFloat.displayLinkedList();
     cout << "size : " << linkedListFloat.size() << endl;
     cout << "---------------------------------------------" << endl;
 
@@ -94,6 +99,8 @@ int main()
     linkedListChar.displayLinkedList();
     linkedListChar.search('A');
     linkedListChar.search('$');
+    linkedListChar.reverse();
+    linkedListChar.displayLinkedList();
     cout << "size : " << linkedListChar.size() << endl;
     cout << "---------------------------------------------" << endl;
 
@@ -101,7 +108,7 @@ int main()
 
 template<class T>
 LinkedList<T>::LinkedList(T value) {
-    struct Node<T> *node = head = tail = allocateHeapNode(value);
+    struct Node<T>* node = head = tail = allocateHeapNode(value);
     node->next = NULL;
 }
 
@@ -122,7 +129,7 @@ void LinkedList<T>::prepend(T value) {
 
 template<class T>
 void LinkedList<T>::removeLast() {
-    struct Node<T> *node = traverse(capacity - 2);
+    struct Node<T>* node = traverse(capacity - 2);
     deallocateHeapNode(node->next);
     node->next = NULL;
     tail = node;
@@ -136,7 +143,7 @@ void LinkedList<T>::removeFirst() {
 }
 
 template<class T>
-void LinkedList<T>::insert(T value,int index) {
+void LinkedList<T>::insert(T value, int index) {
     if (index == 0) prepend(value);
     else if (index >= (capacity - 1)) append(value);
     else {
@@ -179,6 +186,22 @@ void LinkedList<T>::update(T value, int index) {
 }
 
 template<class T>
+void LinkedList<T>::reverse() {
+    struct Node<T>* first = head;
+    struct Node<T>* second = head->next;
+    tail = head;
+    while (second != NULL)
+    {
+        struct Node<T>* temp = second->next;
+        second->next = first;
+        first = second;
+        second = temp;
+    }
+    head = first;
+    tail->next = NULL;
+}
+
+template<class T>
 int LinkedList<T>::size() {
     return this->capacity;
 }
@@ -186,7 +209,7 @@ int LinkedList<T>::size() {
 template<class T>
 void LinkedList<T>::displayLinkedList() {
     struct Node<T>* start = head;
-    for (int i = 0; i <= capacity-1 ;i++) {
+    for (int i = 0; i <= capacity - 1;i++) {
         cout << start->value << "~~>";
         start = start->next;
     }
@@ -208,11 +231,11 @@ void LinkedList<T>::deallocateHeapNode(struct Node<T>* node) {
     capacity--;
 }
 
-template<class T> 
+template<class T>
 struct Node<T>* LinkedList<T>::traverse(int index) {
     struct Node<T>* start = head;
     if (index >= capacity) index = capacity - 1;
-    for (int i = 0; i < index; i++) 
+    for (int i = 0; i < index; i++)
         start = start->next;
     return start;
 }
