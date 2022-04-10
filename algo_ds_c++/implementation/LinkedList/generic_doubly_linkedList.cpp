@@ -1,6 +1,3 @@
-// doubly_VS_singly_linkedList.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <stdio.h>
 using namespace std;
@@ -25,6 +22,7 @@ public:
     void removeFirst();
     void removeLast();
     void remove(struct doublyNode<T>* node);
+    void reverse();
     void printForward();
     void printBackward();
     struct doublyNode<T>* traverse(int index);
@@ -47,6 +45,8 @@ int main()
     doublyLinkedListInteger.remove(doublyLinkedListInteger.traverse(1));
     doublyLinkedListInteger.printForward();
     doublyLinkedListInteger.printBackward();
+    doublyLinkedListInteger.reverse();
+    doublyLinkedListInteger.printForward();
     cout << "--------------------------------------------" << endl;
 
     DoublyLinkedList<char> doublyLinkedListChar('A');
@@ -61,6 +61,8 @@ int main()
     doublyLinkedListChar.remove(doublyLinkedListChar.traverse(1));
     doublyLinkedListChar.printForward();
     doublyLinkedListChar.printBackward();
+    doublyLinkedListChar.reverse();
+    doublyLinkedListChar.printForward();
     cout << "--------------------------------------------" << endl;
 }
 
@@ -119,6 +121,23 @@ void DoublyLinkedList<T>::remove(struct doublyNode<T>* node) {
     (node->prev)->next = node->next;
     (node->next)->prev = node->prev;
     deallocateHeapNode(node);
+}
+
+template<class T>
+void DoublyLinkedList<T>::reverse() {
+    struct doublyNode<T>* first = head;
+    struct doublyNode<T>* second = head->next;
+    tail = head;
+    while (second != NULL) {
+        struct doublyNode<T>* temp = second->next;
+        second->next = first;
+        first->prev = second;
+        first = second;
+        second = temp;
+    }
+    head = first;
+    head->prev = NULL;
+    tail->next = NULL;
 }
 
 template<class T>
