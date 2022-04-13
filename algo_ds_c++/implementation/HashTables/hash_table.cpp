@@ -4,8 +4,31 @@
 #include <iostream>
 #include <stdio.h>
 #define TOTAL_CAPACITY 200
-#define SIZE 50
+#define SIZE 2
 using namespace std;
+
+template<class K, class V>
+struct LinkedListNode {
+    K key;
+    V value;
+    struct LinkedListNode<K, V>* next;
+};
+
+template<class K, class V>
+class LinkedList {
+private:
+    struct LinkedListNode<K, V>* head, * tail;
+    int capacity = 0;
+public:
+    LinkedList();
+    LinkedList(K key, V value);
+    void append(K key, V value);
+    void print();
+    int size();
+private:
+    struct LinkedListNode<K, V>* allocateHeapNode(K key, V value);
+    void deallocateHeapNode(struct LinkedListNode<K, V>* node);
+};
 
 template<class K, class V>
 struct HashNode {
@@ -17,6 +40,7 @@ template<class K, class V>
 class HashTable {
 private:
     struct HashNode<K, V>** nodes;
+    struct LinkedList<K, V>* extraNodes;
     int capacity = 0;
 public:
     HashTable(K key, V value);
@@ -40,12 +64,62 @@ int main()
     hashTable.traverse();
 }
 
+template<class K, class V>
+LinkedList<K, V>::LinkedList() {
+    struct LinkedListNode<K, V>* node = NULL;
+}
+
+template<class K, class V>
+LinkedList<K, V>::LinkedList(K key, V value) {
+    struct LinkedListNode<K, V>* node = head = tail = allocateHeapNode(key, value);
+}
+
+template<class K, class V>
+void LinkedList<K, V>::append(K key, V value) {
+    struct LinkedListNode<K, V>* node = allocateHeapNode(key, value);
+    tail->next = node;
+    tail = node;
+}
+
+template<class K, class V>
+void LinkedList<K, V>::print() {
+    struct LinkedListNode<K, V>* start = head;
+    cout << "-->";
+    for (int i = 0;i < capacity;i++) {
+        cout << "[" << start->key << "," << start->value << "]" << "--->";
+        start = start->next;
+    }
+}
+
+template<class K, class V>
+struct LinkedListNode<K, V>* LinkedList<K, V>::allocateHeapNode(K key, V value) {
+    struct LinkedListNode<K, V>* node = new LinkedListNode<K, V>();
+    node->key = key;
+    node->value = value;
+    node->next = NULL;
+    capacity++;
+    return node;
+}
+
+template<class K, class V>
+void LinkedList<K, V>::deallocateHeapNode(struct LinkedListNode<K, V>* node) {
+    delete node;
+    node = NULL;
+    capacity--;
+}
+
+template<class K, class V>
+int LinkedList<K, V>::size() {
+    return capacity;
+}
 
 template<class K, class V>
 HashTable<K, V>::HashTable(K key, V value) {
     nodes = (HashNode<K, V> **) malloc(SIZE * sizeof(HashNode<K, V>));
+    extraNodes = new LinkedList<K,V>[SIZE]();
     for (int i = 0;i < SIZE;i++) {
         nodes[i] = NULL;
+        extraNodes[i] = LinkedList<K,V>();
     }
     nodes[hashFunction(key)] = allocateHashNode(key, value);
 }
@@ -61,7 +135,12 @@ void HashTable<K, V>::insert(K key, V value) {
         nodes[index]->value = value;
     }
     else {
-        cout << "COLLISION HAPPENED" << endl;
+        if (extraNodes[index].size() == 0) {
+            extraNodes[index] = LinkedList<K, V>(key, value);
+        }
+        else {
+            extraNodes[index].append(key, value);
+        }
     }
 }
 
@@ -70,7 +149,10 @@ template<class K, class V>
 void HashTable<K, V>::traverse() {
     for (int i = 0;i < SIZE;i++) {
         if (nodes[i] != NULL) {
-            cout << "[" << nodes[i]->key << "," << nodes[i]->value << "] " << endl;
+            cout << "[" << nodes[i]->key << "," << nodes[i]->value << "] ";
+            if (extraNodes[i].size() > 0)
+                extraNodes[i].print();
+            cout << endl;
         }
     }
     cout << endl;
