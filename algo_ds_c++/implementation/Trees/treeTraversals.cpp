@@ -43,8 +43,9 @@ public:
     Stack();
     Stack(T value);
     void push(T value);
-    T pop();
+    T pop(bool log=true);
     T top();
+    struct LinkedListNode<T>* topNode();
     bool isEmpty();
     void print();
 };
@@ -65,16 +66,27 @@ private:
 public:
     BinarySearchTree();
     void insert(T value);
-    struct Node<T>* lookup(T value);
+    void remove(T value);
+    struct Node<T>* lookup(T value,bool log=true);
     void inorderRecursive();
     void preorderRecursive();
     void postorderRecusrsive();
+    void inorderIterative();
+    void preorderIterative();
+    void postorderIterative();
+    struct Node<T>* inorderSuccessor(T value);
+    struct Node<T>* inorderPredeccessor(T value);
+    struct Node<T>* getMax(struct Node<T>* start);
+    struct Node<T>* getMin(struct Node<T>* start);
     void print();
     ~BinarySearchTree();
 private:
     T* inorderRecursiveTraversal(struct Node<T>* node, T* traversal);
     T* preorderRecursiveTraversal(struct Node<T>* node, T* traversal);
     T* postorderRecursiveTraversal(struct Node<T>* node, T* traversal);
+    T* inorderIterativeTraversal(struct Node<T>* node, T* traversal);
+    T* preorderIterativeTraversal(struct Node<T>* node, T* traversal);
+    T* postorderIterativeTraversal(struct Node<T>* node, T* traversal);
     void printTree(struct Node<T>* root, int space);
     struct Node<T>* getRoot();
     struct Node<T>* allocateNode(T value);
@@ -119,6 +131,40 @@ int main()
     binarySearchTree.postorderRecusrsive();
 
     cout << "--------------------------------------------------------" << endl;
+    cout << "ITERATIVE TRAVERSALS:" << endl;
+    cout << "----------------------" << endl;
+    binarySearchTree.inorderIterative();
+    binarySearchTree.preorderIterative();
+    binarySearchTree.postorderIterative();
+
+    cout << "--------------------------------------------------------" << endl;
+    cout << "INORDER SUCCESSORS:" << endl;
+    cout << "----------------------" << endl;
+    cout << "SUCCESSOR OF 80 IS:" << binarySearchTree.inorderSuccessor(80) << endl;
+    cout << "SUCCESSOR OF 15 IS:" << binarySearchTree.inorderSuccessor(15)->value << endl;
+    cout << "SUCCESSOR OF 18 IS:" << binarySearchTree.inorderSuccessor(18)->value << endl;
+    cout << "SUCCESSOR OF 51 IS:" << binarySearchTree.inorderSuccessor(51)->value << endl;
+
+    cout << "--------------------------------------------------------" << endl;
+    cout << "INORDER PREDECCESSORS:" << endl;
+    cout << "----------------------" << endl;
+    cout << "PREDECESSOR OF 80 IS:" << binarySearchTree.inorderPredeccessor(80)->value << endl;
+    cout << "PREDECESSOR OF 15 IS:" << binarySearchTree.inorderPredeccessor(15)->value << endl;
+    cout << "PREDECESSOR OF 18 IS:" << binarySearchTree.inorderPredeccessor(18)->value << endl;
+    cout << "PREDECESSOR OF 51 IS:" << binarySearchTree.inorderPredeccessor(51)->value << endl;
+
+    cout << "--------------------------------------------------------" << endl;
+    cout << "NODE REMOVAL:";
+    cout << "----------------------" << endl;
+    binarySearchTree.remove(1);
+    binarySearchTree.remove(5);
+    binarySearchTree.remove(7);
+    binarySearchTree.remove(49);
+    binarySearchTree.remove(20);
+    binarySearchTree.remove(50);
+    binarySearchTree.remove(15);
+
+    binarySearchTree.print();
 
 }
 
@@ -139,9 +185,12 @@ void Stack<T>::push(T value) {
 }
 
 template<class T>
-T Stack<T>::pop() {
-    if (this->isEmpty()) {
+T Stack<T>::pop(bool log) {
+    if (this->isEmpty() && log == true) {
         cout << "CANT'T POP FROM EMPTY STACK" << endl;
+        return NULL;
+    }
+    else if (this->isEmpty() && log == false) {
         return NULL;
     }
     return this->stack.removeLast()->value;
@@ -155,6 +204,12 @@ T Stack<T>::top() {
     }
     return this->stack.getTail()->value;
 }
+
+template<class T>
+struct LinkedListNode<T>* Stack<T>::topNode() {
+    return this->stack.getTail();
+}
+
 
 template<class T>
 bool Stack<T>::isEmpty() {
@@ -304,14 +359,66 @@ void BinarySearchTree<T>::insert(T value) {
 }
 
 template<class T>
-struct Node<T>* BinarySearchTree<T>::lookup(T value) {
+void BinarySearchTree<T>::remove(T value) {
+    struct Node<T>* node = this->lookup(value, false);
+
+    if (node == NULL) {
+        cout << "NODE DOESN'T EXIST IN TREE" << endl;
+        return;
+    }
+
+    if (!node->left && !node->right) {
+        if ((node->parent)->left && ((node->parent)->left)->value == value) {
+            (node->parent)->left = NULL;
+        }
+        else if((node->parent)->right && ((node->parent)->right)->value == value) {
+            (node->parent)->right = NULL;
+        }
+        deallocateNode(node);
+    }
+    else if (!(node->right && node->left) && (node->right || node->left)) {
+        if (node->left) {
+            if ((node->parent)->left && ((node->parent)->left)->value == value) {
+                (node->parent)->left = node->left;
+            }
+            else if ((node->parent)->right && ((node->parent)->right)->value == value) {
+                (node->parent)->right = node->left;
+            }
+        }
+        else {
+            if ((node->parent)->left && ((node->parent)->left)->value == value) {
+                (node->parent)->left = node->right;
+            }
+            else if ((node->parent)->right && ((node->parent)->right)->value == value) {
+                (node->parent)->right = node->right;
+            }
+        }
+        deallocateNode(node);
+    }
+    else {
+        struct Node<T>* inorderSuccessor = this->inorderSuccessor(node->value);
+        node->value = inorderSuccessor->value;
+        if ((inorderSuccessor->parent)->left && ((inorderSuccessor->parent)->left)->value == inorderSuccessor->value) {
+            (inorderSuccessor->parent)->left = NULL;
+        }
+        else if ((inorderSuccessor->parent)->right && ((inorderSuccessor->parent)->right)->value == inorderSuccessor->value) {
+            (inorderSuccessor->parent)->right = NULL;
+        }
+        deallocateNode(inorderSuccessor);
+    }
+}
+
+template<class T>
+struct Node<T>* BinarySearchTree<T>::lookup(T value,bool log) {
     struct Node<T>* current = this->getRoot();
     if (current == NULL && this->capacity == 0) {
-        cout << "ROOT IS EMPTY" << endl;
+        if(log == true)
+            cout << "ROOT IS EMPTY" << endl;
     }
 
     if (current->value == value) {
-        cout << "ELEMENT [" << value << "] EXISTS IN TREE" << endl;
+        if (log == true)
+            cout << "ELEMENT [" << value << "] EXISTS IN TREE" << endl;
         return this->getRoot();
     }
 
@@ -319,7 +426,8 @@ struct Node<T>* BinarySearchTree<T>::lookup(T value) {
         //go to left child 
         if (current->value > value ) {
             if (current->left == NULL) {
-                cout << "ELEMENT [" << value << "] DOESN'T EXISTS IN TREE" << endl;
+                if (log == true)
+                    cout << "ELEMENT [" << value << "] DOESN'T EXISTS IN TREE" << endl;
                 return NULL;
             }
             current = current->left;
@@ -327,14 +435,16 @@ struct Node<T>* BinarySearchTree<T>::lookup(T value) {
         //go to the right
         else if (current->value < value) {
             if (current->right == NULL) {
-                cout << "ELEMENT [" << value << "] DOESN'T EXISTS IN TREE" << endl;
+                if (log == true)
+                    cout << "ELEMENT [" << value << "] DOESN'T EXISTS IN TREE" << endl;
                 return NULL;
             }
             current = current->right;
         }
         //value found
         else {
-            cout << "ELEMENT [" << value << "] EXISTS IN TREE" << endl;
+            if (log == true)
+                cout << "ELEMENT [" << value << "] EXISTS IN TREE" << endl;
             return current;
         }
     }
@@ -344,9 +454,9 @@ template<class T>
 void BinarySearchTree<T>::inorderRecursive() {
     T* traversal = new T[this->capacity];
     this->inorderRecursiveTraversal(this->getRoot(), &traversal[0]);
-    cout << "INORDER TRAVERSAL: ";
+    cout << "INORDER RECURSIVE TRAVERSAL: ";
     for (int i = 0;i < this->capacity;i++) {
-        cout << traversal[i] << "--->";
+        cout << traversal[i] << "-->";
     }
     cout << endl;
 }
@@ -355,9 +465,9 @@ template<class T>
 void BinarySearchTree<T>::preorderRecursive() {
     T* traversal = new T[this->capacity];
     this->preorderRecursiveTraversal(this->getRoot(), traversal);
-    cout << "PREORDER TRAVERSAL: ";
+    cout << "PREORDER RECURSIVE TRAVERSAL: ";
     for (int i = 0;i < this->capacity;i++) {
-        cout << traversal[i] << "--->";
+        cout << traversal[i] << "-->";
     }
     cout << endl;
 }
@@ -366,11 +476,102 @@ template<class T>
 void BinarySearchTree<T>::postorderRecusrsive() {
     T* traversal = new T[this->capacity];
     this->postorderRecursiveTraversal(this->getRoot(), traversal);
-    cout << "POSTORDER TRAVERSAL: ";
+    cout << "POSTORDER RECURSIVE TRAVERSAL: ";
     for (int i = 0;i < this->capacity;i++) {
-        cout << traversal[i] << "--->";
+        cout << traversal[i] << "-->";
     }
     cout << endl;
+}
+
+template<class T>
+void BinarySearchTree<T>::inorderIterative() {
+    T* traversal = new T[this->capacity];
+    this->inorderIterativeTraversal(this->getRoot(), traversal);
+    cout << "INORDER ITERATIVE TRAVERSAL: ";
+    for (int i = 0;i < this->capacity;i++) {
+        cout << traversal[i] << "-->";
+    }
+    cout << endl;
+}
+
+template<class T>
+void BinarySearchTree<T>::preorderIterative() {
+    T* traversal = new T[this->capacity];
+    this->preorderIterativeTraversal(this->getRoot(), traversal);
+    cout << "PREORDER ITERATIVE TRAVERSAL: ";
+    for (int i = 0;i < this->capacity;i++) {
+        cout << traversal[i] << "-->";
+    }
+    cout << endl;
+}
+
+template<class T>
+void BinarySearchTree<T>::postorderIterative() {
+    T* traversal = new T[this->capacity];
+    this->postorderIterativeTraversal(this->getRoot(), traversal);
+    cout << "POSTORDER ITERATIVE TRAVERSAL: ";
+    for (int i = 0;i < this->capacity;i++) {
+        cout << traversal[i] << "-->";
+    }
+    cout << endl;
+}
+
+template<class T>
+struct Node<T>* BinarySearchTree<T>::inorderSuccessor(T value) {
+    struct Node<T>* node = this->lookup(value, false);
+    if (node == NULL) {
+        cout << "NODE DOESN'T EXIST IN TREE" << endl;
+        return NULL;
+    }
+
+    if (node == this->getMax(this->getRoot())) {
+        cout << "NODE HAS NO SUCCESSORS" << endl;
+        return NULL;
+    }
+    else if (node->right) {
+        return this->getMin(node->right);
+    }
+    else {
+        while ((node->parent)->left != node)
+            node = node->parent;
+        return node->parent;
+    }
+}
+
+template<class T>
+struct Node<T>* BinarySearchTree<T>::inorderPredeccessor(T value) {
+    struct Node<T>* node = this->lookup(value, false);
+    if (node == NULL) {
+        cout << "NODE DOESN'T EXIST IN TREE" << endl;
+        return NULL;
+    }
+
+    if (node == this->getMin(this->getRoot())) {
+        cout << "NODE HAS NO SUCCESSORS" << endl;
+        return NULL;
+    }
+    else if (node->left) {
+        return this->getMax(node->left);
+    }
+    else {
+        while ((node->parent)->right != node)
+            node = node->parent;
+        return node->parent;
+    }
+}
+
+template<class T>
+struct Node<T>* BinarySearchTree<T>::getMax(struct Node<T>* start) {
+    while (start->right) 
+        start = start->right;
+    return start;
+}
+
+template<class T>
+struct Node<T>* BinarySearchTree<T>::getMin(struct Node<T>* start) {
+    while (start->left)
+        start = start->left;
+    return start;
 }
 
 template<class T>
@@ -417,6 +618,59 @@ T* BinarySearchTree<T>::postorderRecursiveTraversal(struct Node<T>* node, T* tra
     postorderRecursiveTraversal(node->left, traversal);
     postorderRecursiveTraversal(node->right, traversal);
     traversal[i++] = node->value;
+}
+
+template<class T>
+T* BinarySearchTree<T>::inorderIterativeTraversal(struct Node<T>* node, T* traversal) {
+    int i = 0;
+    Stack<T> stack;
+    struct Node<T>* current = this->getRoot();
+    while(current != NULL || !stack.isEmpty()) {
+        while (current != NULL) {
+            stack.push(current->value);
+            current = current->left;
+        }
+        struct Node<T>* top = this->lookup(stack.top(),false);
+        traversal[i++] = stack.pop();
+        current = top->right;
+    }
+    return traversal;
+}
+
+template<class T>
+T* BinarySearchTree<T>::preorderIterativeTraversal(struct Node<T>* node, T* traversal) {
+    int i = 0;
+    Stack<T> stack;
+    struct Node<T>* current = this->root;
+    while (!stack.isEmpty() || current != NULL) {
+        while (current != NULL) {
+            traversal[i++] = current->value;
+            if (current->right)
+                stack.push((current->right)->value);
+            current = current->left;
+        }
+        current = this->lookup(stack.pop(false),false);
+    }
+    return traversal;
+}
+
+template<class T>
+T* BinarySearchTree<T>::postorderIterativeTraversal(struct Node<T>* node, T* traversal) {
+    int i = 0;
+    Stack<T> s1, s2;
+    s1.push(this->getRoot()->value);
+    while (!s1.isEmpty()) {
+        struct Node<T>* node = this->lookup(s1.pop(),false);
+        s2.push(node->value);
+        if (node->left)
+            s1.push((node->left)->value);
+        if (node->right)
+            s1.push((node->right)->value);
+    }
+    while (!s2.isEmpty()) {
+        traversal[i++] = s2.pop();
+    }
+    return traversal;
 }
 
 template<class T>
