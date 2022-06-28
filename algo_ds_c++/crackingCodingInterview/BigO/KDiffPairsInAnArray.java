@@ -21,36 +21,32 @@ class Solution {
         return nums.length == 0 ? 0 : this.countPairs(nums, k);
     }
 
-    private int countPairs(int[] nums, int k) {
-        int pairsCounter = 0, duplicatesCounter = 0;
-        Map<Integer, Boolean> numMap = this.generateMap(nums);
-        Map<Integer, Integer> pairs = new HashMap();
-        for (Integer num : numMap.keySet()) {
+    private int countPairs(int[] nums, int k){
+        int pairsCounter =0, duplicatesCounter = 0;
+        Map<Integer,Boolean> numMap = this.buildMap(nums);
+        Map<Integer,Integer> pairs = new HashMap();
+        for(Integer num: numMap.keySet()){
             int value = num - k;
-            if (numMap.containsKey(value)) {
-                if (numMap.get(num) && k == 0) {
-                    duplicatesCounter++;
-                }
-                if (value == num || (this.pairExists(pairs, num, value) || this.pairExists(pairs, value, num))) {
-                    continue;
-                }
-                pairs.put(num, value);
+            if(numMap.containsKey(value) && !this.containsPair(pairs,num,value)){
+                if(k == 0 && numMap.get(value)) duplicatesCounter++;
+                if(value == num) continue;
+                pairs.put(num,value);
                 pairsCounter++;
             }
         }
         return pairsCounter + duplicatesCounter;
     }
-
-    private Map<Integer, Boolean> generateMap(int[] nums) {
-        Map<Integer, Boolean> numMap = new HashMap<>();
-        for (int number : nums) {
-            numMap.put(number, numMap.containsKey(number));
+    
+    private Boolean containsPair(Map<Integer,Integer> pairs, int num1, int num2){
+        return (pairs.containsKey(num1) && pairs.get(num1) == num2)  || (pairs.containsKey(num2) && pairs.get(num2) == num1 );
+    }
+    
+    private Map<Integer,Boolean> buildMap(int[] nums){
+        Map<Integer,Boolean> numMap = new HashMap<>();
+        for(int num: nums){
+            numMap.put(num,numMap.containsKey(num) ? true : false);
         }
         return numMap;
-    }
-
-    private Boolean pairExists(Map<Integer, Integer> map, int pair1, int pair2) {
-        return map.containsKey(pair1) && map.get(pair1) == pair2;
     }
 
 }
