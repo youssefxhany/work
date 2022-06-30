@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
  *
  * @author youssef hany
  */
-
 class SolutionOrderS1S2 {
+
     public boolean checkInclusion(String s1, String s2) {
         return s1.length() > s2.length() || s1.length() == 0 || s2.length() == 0 ? false : this.hasPermutation(s1, s2);
     }
-    
+
     private boolean hasPermutation(String s1, String s2) {
         int windowStart = 0, windowEnd = s1.length() - 1;
         while (windowEnd < s2.length()) {
@@ -30,67 +30,73 @@ class SolutionOrderS1S2 {
                     } else {
                         mapString1.put(s2.charAt(i), mapString1.get(s2.charAt(i)) - 1);
                     }
-                }else{
+                } else {
                     break;
                 }
             }
-            if(mapString1.isEmpty())
+            if (mapString1.isEmpty()) {
                 return true;
+            }
             windowStart++;
             windowEnd++;
         }
         return false;
     }
-    
+
     private Map<Character, Integer> generateMap(String string) {
         Map<Character, Integer> map = new HashMap<>();
-        for (int i = 0; i < string.length(); i++) 
-            map.put(string.charAt(i),map.containsKey(string.charAt(i)) ? map.get(string.charAt(i)) + 1 : 1);
+        for (int i = 0; i < string.length(); i++) {
+            map.put(string.charAt(i), map.containsKey(string.charAt(i)) ? map.get(string.charAt(i)) + 1 : 1);
+        }
         return map;
     }
-        
+
 }
 
 //Better solution at O(s2)
-class Solution{
+class Solution {
+
     private int windowStart;
     private int windowEnd;
-    
+
     public boolean checkInclusion(String s1, String s2) {
-        windowStart = 0 - s1.length(); 
+        windowStart = 0 - s1.length();
         windowEnd = -1;
         return s1.length() > s2.length() || s1.length() == 0 || s2.length() == 0 ? false : this.hasPermutation(s1, s2);
     }
-    
+
     private boolean hasPermutation(String s1, String s2) {
-        Map<Character,Integer> mapS1 = this.generateMap(s1);
-        while(windowEnd < s2.length()-1){
+        Map<Character, Integer> mapS1 = this.generateMap(s1);
+        while (windowEnd < s2.length() - 1) {
             this.moveWindowToTheRight();
             char enteringChar = s2.charAt(windowEnd);
-            char leavingChar = s2.charAt(windowStart >=1 ? windowStart-1 : 0);
-            if(mapS1.containsKey(enteringChar))
-                mapS1.put(enteringChar, mapS1.get(enteringChar)-1);
-            if(windowStart >= 1 && mapS1.containsKey(leavingChar))
-                mapS1.put(leavingChar, mapS1.get(leavingChar)+1);
-            if(!mapS1.values().stream().filter(v->v!=0).findAny().isPresent()){
+            char leavingChar = s2.charAt(windowStart >= 1 ? windowStart - 1 : 0);
+            if (mapS1.containsKey(enteringChar)) {
+                mapS1.put(enteringChar, mapS1.get(enteringChar) - 1);
+            }
+            if (windowStart >= 1 && mapS1.containsKey(leavingChar)) {
+                mapS1.put(leavingChar, mapS1.get(leavingChar) + 1);
+            }
+            if (!mapS1.values().stream().anyMatch(v->v>0)) {
                 return true;
             }
         }
         return false;
     }
-    
-    private void moveWindowToTheRight(){
+
+    private void moveWindowToTheRight() {
         windowStart++;
         windowEnd++;
     }
-    
+
     private Map<Character, Integer> generateMap(String string) {
         Map<Character, Integer> map = new HashMap<>();
-        for(int i=0; i<string.length(); i++)
+        for (int i = 0; i < string.length(); i++) {
             map.put(string.charAt(i), map.containsKey(string.charAt(i)) ? map.get(string.charAt(i)) + 1 : 1);
+        }
         return map;
     }
-    
+
 }
 
 public class PermutationInString {
@@ -100,7 +106,7 @@ public class PermutationInString {
      */
     public static void main(String[] args) {
         Solution solution = new Solution();
-        System.out.println(solution.checkInclusion("adc","dcda"));
+        System.out.println(solution.checkInclusion("adc", "dcda"));
     }
-    
+
 }
